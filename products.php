@@ -115,22 +115,59 @@ $result = mysqli_query($conn, $query);
 
 <div class="products-container">
     <?php if (mysqli_num_rows($result) > 0) { ?>
+
         <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+
             <div class="product-card">
-                <div class="product-category"><?php echo htmlspecialchars($row["category"]); ?></div>
-                <h3><?php echo htmlspecialchars($row["product_name"]); ?></h3>
-                <p class="product-description"><?php echo htmlspecialchars($row["description"]); ?></p>
-                <p class="product-price">$<?php echo number_format($row["price"], 2); ?></p>
-                <p class="product-stock">In Stock: <?php echo (int)$row["stock_quantity"]; ?></p>
+
+                <?php if (!empty($row["image"])) { ?>
+                    <img 
+                        src="images/<?php echo htmlspecialchars($row["image"]); ?>" 
+                        class="product-image"
+                        alt="<?php echo htmlspecialchars($row["product_name"]); ?>"
+                    >
+                <?php } else { ?>
+                    <img 
+                        src="images/default-product.jpg" 
+                        class="product-image"
+                        alt="Default product image"
+                    >
+                <?php } ?>
+
+                <div class="product-category">
+                    <?php echo htmlspecialchars($row["category"]); ?>
+                </div>
+
+                <h3>
+                    <?php echo htmlspecialchars($row["product_name"]); ?>
+                </h3>
+
+                <p class="product-description">
+                    <?php echo htmlspecialchars($row["description"]); ?>
+                </p>
+
+                <p class="product-price">
+                    $<?php echo number_format($row["price"], 2); ?>
+                </p>
+
+                <p class="product-stock">
+                    In Stock: <?php echo (int)$row["stock_quantity"]; ?>
+                </p>
+
             </div>
+
         <?php } ?>
+
     <?php } else { ?>
+
         <p class="no-products">No products found.</p>
+
     <?php } ?>
 </div>
 
 <?php if ($total_pages > 1) { ?>
     <div class="pagination">
+
         <?php if ($page > 1) { ?>
             <a href="products.php?category=<?php echo urlencode($selected_category); ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo urlencode($sort); ?>&page=<?php echo $page - 1; ?>">Previous</a>
         <?php } ?>
@@ -145,6 +182,7 @@ $result = mysqli_query($conn, $query);
         <?php if ($page < $total_pages) { ?>
             <a href="products.php?category=<?php echo urlencode($selected_category); ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo urlencode($sort); ?>&page=<?php echo $page + 1; ?>">Next</a>
         <?php } ?>
+
     </div>
 <?php } ?>
 
