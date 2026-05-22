@@ -34,6 +34,22 @@ body {
     box-sizing: border-box;
 }
 
+.form-container textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.wide-form {
+    width: min(620px, 90%);
+}
+
 .form-container button {
     width: 100%;
     padding: 12px;
@@ -138,6 +154,118 @@ nav a:hover {
     font-size: 14px;
     margin-left: 6px;
     margin-right: 4px;
+}
+
+.success-message,
+.error-message {
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.success-message {
+    background: #e8f6ee;
+    color: #1f6f46;
+    border: 1px solid #b8e2c8;
+}
+
+.error-message {
+    background: #fff0f0;
+    color: #b71c1c;
+    border: 1px solid #f3c1c1;
+}
+
+.dashboard-actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.dashboard-actions a {
+    text-align: center;
+    text-decoration: none;
+    padding: 11px 12px;
+    border-radius: 8px;
+    background: #2d6a4f;
+    color: white;
+    font-weight: bold;
+}
+
+.dashboard-actions a:hover {
+    background: #24543f;
+}
+
+.admin-summary {
+    width: min(1000px, 90%);
+    margin: 25px auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.admin-stat,
+.admin-panel {
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(255, 255, 255, 0.76);
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.06);
+}
+
+.admin-stat {
+    border-radius: 14px;
+    padding: 22px;
+    text-align: center;
+}
+
+.admin-stat span {
+    display: block;
+    color: #d62828;
+    font-size: 34px;
+    font-weight: bold;
+}
+
+.admin-stat p {
+    color: #2d6a4f;
+    font-weight: bold;
+    margin: 8px 0 0;
+}
+
+.admin-panel {
+    width: min(1100px, 90%);
+    margin: 30px auto 60px;
+    padding: 24px;
+    border-radius: 14px;
+}
+
+.admin-panel h2 {
+    color: #2d6a4f;
+    margin-top: 0;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e5e5;
+    text-align: left;
+    vertical-align: top;
+}
+
+.admin-table th {
+    color: #2d6a4f;
+    background: #f3faf6;
+}
+
+.empty-state {
+    color: #555;
 }
 
 /* Product Page Design */

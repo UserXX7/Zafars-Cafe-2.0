@@ -20,9 +20,13 @@ if (session_status() === PHP_SESSION_NONE) {
     <nav>
         <a href="index.php">Home</a>
         <a href="products.php">Products</a>
+        <a href="feedback.php">Feedback</a>
 
         <?php if (isset($_SESSION["user_id"])): ?>
             <a href="homepage.php">Dashboard</a>
+            <?php if (isset($_SESSION["role"]) && $_SESSION["role"] === "admin"): ?>
+                <a href="admin.php">Admin</a>
+            <?php endif; ?>
             <span class="welcome">Hi, <?php echo htmlspecialchars($_SESSION["full_name"]); ?></span>
             <a href="logout.php" class="logout-btn">Logout</a>
         <?php else: ?>
