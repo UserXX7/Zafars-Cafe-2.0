@@ -261,10 +261,10 @@ INSERT INTO `products` (`product_id`, `product_name`, `category`, `description`,
 (201, 'Fritos Chili Cheese', 'Snacks', 'Chili cheese corn chips.', 2.25, 50, 'fritos.jpg', '2026-05-05 21:15:41'),
 (202, 'Sun Chips Harvest Cheddar', 'Snacks', 'Multigrain cheddar chips.', 2.50, 40, 'sunchips.jpg', '2026-05-05 21:15:41'),
 (203, 'Sun Chips Garden Salsa', 'Snacks', 'Multigrain salsa chips.', 2.50, 40, 'sunchips.jpg', '2026-05-05 21:15:41'),
-(204, 'Kettle Brand Sea Salt', 'Snacks', 'Kettle cooked sea salt chips.', 2.75, 40, 'kettle.jpg', '2026-05-05 21:15:41'),
-(205, 'Kettle Brand Jalapeno', 'Snacks', 'Spicy jalapeno chips.', 2.75, 40, 'kettle.jpg', '2026-05-05 21:15:41'),
-(206, 'Herrs BBQ Chips', 'Snacks', 'BBQ flavored chips.', 2.00, 50, 'chips.jpg', '2026-05-05 21:15:41'),
-(207, 'Herrs Salt & Vinegar', 'Snacks', 'Salt and vinegar chips.', 2.00, 50, 'chips.jpg', '2026-05-05 21:15:41');
+(204, 'Kettle Brand Sea Salt', 'Snacks', 'Kettle Brand sea salt potato chips.', 2.75, 40, 'seasalt.jpg', '2026-05-05 21:15:41'),
+(205, 'Kettle Brand Jalapeno', 'Snacks', 'Kettle Brand hot jalapeno potato chips.', 2.75, 40, 'jalapeno.jpg', '2026-05-05 21:15:41'),
+(206, 'Herrs Barbecue Potato Chips', 'Snacks', 'Herrs barbecue flavored potato chips.', 2.00, 50, 'bbq.jpg', '2026-05-05 21:15:41'),
+(207, 'Herrs Salt & Vinegar Potato Chips', 'Snacks', 'Herrs salt and vinegar flavored potato chips.', 2.00, 50, 'saltvinegar.jpg', '2026-05-05 21:15:41');
 
 -- --------------------------------------------------------
 
