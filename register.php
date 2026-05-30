@@ -62,25 +62,76 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <?php include("includes/header.php"); ?>
 
-<div class="form-container">
-    <h2>Create Account</h2>
+<section class="auth-page">
+    <div class="auth-card">
+        <div class="auth-left">
+            <p class="auth-tag">Join Zafar's Cafe & Convenience</p>
+            <h1>Create your account</h1>
+            <p>
+                Register to shop faster, manage your profile, and view your past orders anytime.
+            </p>
 
-    <?php
-    if (!empty($errors)) {
-        foreach ($errors as $error) {
-            echo "<p style='color:red;'>$error</p>";
-        }
-    }
-    ?>
+            <div class="auth-highlights">
+                <span>Quick checkout</span>
+                <span>Profile access</span>
+                <span>Order tracking</span>
+            </div>
+        </div>
 
-    <form method="POST">
-        <input type="text" name="full_name" placeholder="Full Name">
-        <input type="email" name="email" placeholder="Email">
-        <input type="text" name="phone" placeholder="Phone">
-        <input type="password" name="password" placeholder="Password">
-        <input type="password" name="confirm_password" placeholder="Confirm Password">
-        <button type="submit">Register</button>
-    </form>
-</div>
+        <div class="auth-right">
+            <h2>Create Account</h2>
+
+            <?php
+            if (!empty($errors)) {
+                echo '<div class="alert-box error-alert">';
+                foreach ($errors as $error) {
+                    echo "<p>" . htmlspecialchars($error) . "</p>";
+                }
+                echo '</div>';
+            }
+
+            if (!empty($success)) {
+                echo '<div class="alert-box success-alert">';
+                echo "<p>" . htmlspecialchars($success) . "</p>";
+                echo '</div>';
+            }
+            ?>
+
+            <form method="POST" class="auth-form">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="full_name" placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" placeholder="Enter your email">
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" name="phone" placeholder="Enter your phone number">
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="Create a password">
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" name="confirm_password" placeholder="Confirm your password">
+                </div>
+
+                <button type="submit" class="auth-submit-btn">Register</button>
+            </form>
+
+            <p class="auth-switch">
+                Already have an account?
+                <a href="login.php">Login here</a>
+            </p>
+        </div>
+    </div>
+</section>
 
 <?php include("includes/footer.php"); ?>

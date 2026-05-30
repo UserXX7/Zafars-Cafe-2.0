@@ -1,189 +1,271 @@
 <?php
-include("includes/db.php");
 include("includes/header.php");
+require_once("includes/db.php");
 
-$selected_category = isset($_GET["category"]) ? $_GET["category"] : "All";
+/** @var mysqli $conn */
+if (!isset($conn) || !$conn) {
+    die("Database connection failed.");
+}
+
 $search = isset($_GET["search"]) ? trim($_GET["search"]) : "";
-$sort = isset($_GET["sort"]) ? $_GET["sort"] : "";
+$category = isset($_GET["category"]) ? trim($_GET["category"]) : "";
+$sort = isset($_GET["sort"]) ? trim($_GET["sort"]) : "default";
 
+$page = isset($_GET["page"]) ? intval($_GET["page"]) : 1;
 $limit = 12;
-$page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
 
 if ($page < 1) {
     $page = 1;
 }
 
-$selected_category_safe = mysqli_real_escape_string($conn, $selected_category);
-$search_safe = mysqli_real_escape_string($conn, $search);
-
-$base_query = "FROM products WHERE 1";
-
-if ($selected_category != "All") {
-    $base_query .= " AND category='$selected_category_safe'";
-}
-
-if (!empty($search)) {
-    $base_query .= " AND (
-        product_name LIKE '%$search_safe%' OR
-        description LIKE '%$search_safe%' OR
-        category LIKE '%$search_safe%'
-    )";
-}
-
-$order_by = " ORDER BY category, product_name";
-
-if ($sort == "name_asc") {
-    $order_by = " ORDER BY product_name ASC";
-} elseif ($sort == "name_desc") {
-    $order_by = " ORDER BY product_name DESC";
-} elseif ($sort == "price_asc") {
-    $order_by = " ORDER BY price ASC";
-} elseif ($sort == "price_desc") {
-    $order_by = " ORDER BY price DESC";
-}
-
-$count_query = "SELECT COUNT(*) AS total " . $base_query;
-$count_result = mysqli_query($conn, $count_query);
-$count_row = mysqli_fetch_assoc($count_result);
-$total_products = $count_row["total"];
-$total_pages = ceil($total_products / $limit);
-
-if ($total_pages < 1) {
-    $total_pages = 1;
-}
-
-if ($page > $total_pages) {
-    $page = $total_pages;
-}
-
 $offset = ($page - 1) * $limit;
 
-$query = "SELECT * " . $base_query . $order_by . " LIMIT $limit OFFSET $offset";
+$where = "WHERE status = 'active'";
+
+if (!empty($search)) {
+    $safe_search = mysqli_real_escape_string($conn, $search);
+    $where .= " AND (product_name LIKE '%$safe_search%' OR category LIKE '%$safe_search%' OR description LIKE '%$safe_search%')";
+}
+
+if (!empty($category) && $category !== "All") {
+    $safe_category = mysqli_real_escape_string($conn, $category);
+    $where .= " AND category = '$safe_category'";
+}
+
+$order_by = "ORDER BY product_id DESC";
+
+if ($sort === "price_low") {
+    $order_by = "ORDER BY price ASC";
+} elseif ($sort === "price_high") {
+    $order_by = "ORDER BY price DESC";
+} elseif ($sort === "name_az") {
+    $order_by = "ORDER BY product_name ASC";
+} elseif ($sort === "name_za") {
+    $order_by = "ORDER BY product_name DESC";
+}
+
+$count_query = "SELECT COUNT(*) AS total FROM products $where";
+$count_result = mysqli_query($conn, $count_query);
+
+if (!$count_result) {
+    die("Count query failed: " . mysqli_error($conn));
+}
+
+$count_row = mysqli_fetch_assoc($count_result);
+$total_products = $count_row["total"] ?? 0;
+$total_pages = ceil($total_products / $limit);
+
+$query = "SELECT * FROM products $where $order_by LIMIT $limit OFFSET $offset";
 $result = mysqli_query($conn, $query);
+
+if (!$result) {
+    die("Products query failed: " . mysqli_error($conn));
+}
+
+$categories_query = "SELECT DISTINCT category FROM products WHERE status = 'active' ORDER BY category ASC";
+$categories_result = mysqli_query($conn, $categories_query);
 ?>
 
-<div class="page-title">
-    <h1>Our Products</h1>
-    <p>Fresh bites, drinks, snacks, and everyday essentials.</p>
-</div>
+<section class="modern-products-page">
 
-<form method="GET" class="search-form">
-    <input type="text" name="search" placeholder="Search products..." value="<?php echo htmlspecialchars($search); ?>">
-    <input type="hidden" name="category" value="All">
-    <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sort); ?>">
-    <button type="submit">Search</button>
-</form>
+    <div class="products-hero-card">
+        <div>
+            <p class="profile-tag">Shop Local</p>
+            <h1>Our Products</h1>
+            <p>Fresh bites, drinks, snacks, and everyday essentials from Zafar's Cafe & Convenience.</p>
+        </div>
 
-<form method="GET" class="sort-form">
-    <input type="hidden" name="category" value="<?php echo htmlspecialchars($selected_category); ?>">
-    <input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>">
+        <div class="products-hero-actions">
+            <a href="cart.php" class="admin-primary-btn">View Cart</a>
+            <a href="profile.php" class="admin-outline-btn">My Account</a>
+        </div>
+    </div>
 
-    <label for="sort">Sort by:</label>
-    <select name="sort" id="sort" onchange="this.form.submit()">
-        <option value="" <?php if ($sort == "") echo "selected"; ?>>Default</option>
-        <option value="name_asc" <?php if ($sort == "name_asc") echo "selected"; ?>>Name: A to Z</option>
-        <option value="name_desc" <?php if ($sort == "name_desc") echo "selected"; ?>>Name: Z to A</option>
-        <option value="price_asc" <?php if ($sort == "price_asc") echo "selected"; ?>>Price: Low to High</option>
-        <option value="price_desc" <?php if ($sort == "price_desc") echo "selected"; ?>>Price: High to Low</option>
-    </select>
-</form>
+    <div class="products-control-card">
+        <form method="GET" class="modern-products-search">
+            <input type="text" name="search" placeholder="Search coffee, snacks, breakfast..."
+                   value="<?php echo htmlspecialchars($search); ?>">
 
-<div class="category-filters">
-    <a href="products.php?category=All&sort=<?php echo urlencode($sort); ?>" class="<?php echo ($selected_category == 'All' && empty($search)) ? 'active-filter' : ''; ?>">All</a>
-    <a href="products.php?category=Coffee&search=<?php echo urlencode($search); ?>&sort=<?php echo urlencode($sort); ?>" class="<?php echo ($selected_category == 'Coffee') ? 'active-filter' : ''; ?>">Coffee</a>
-    <a href="products.php?category=Cold Drinks&search=<?php echo urlencode($search); ?>&sort=<?php echo urlencode($sort); ?>" class="<?php echo ($selected_category == 'Cold Drinks') ? 'active-filter' : ''; ?>">Cold Drinks</a>
-    <a href="products.php?category=Water&search=<?php echo urlencode($search); ?>&sort=<?php echo urlencode($sort); ?>" class="<?php echo ($selected_category == 'Water') ? 'active-filter' : ''; ?>">Water</a>
-    <a href="products.php?category=Breakfast&search=<?php echo urlencode($search); ?>&sort=<?php echo urlencode($sort); ?>" class="<?php echo ($selected_category == 'Breakfast') ? 'active-filter' : ''; ?>">Breakfast</a>
-    <a href="products.php?category=Grocery&search=<?php echo urlencode($search); ?>&sort=<?php echo urlencode($sort); ?>" class="<?php echo ($selected_category == 'Grocery') ? 'active-filter' : ''; ?>">Grocery</a>
-    <a href="products.php?category=Snacks&search=<?php echo urlencode($search); ?>&sort=<?php echo urlencode($sort); ?>" class="<?php echo ($selected_category == 'Snacks') ? 'active-filter' : ''; ?>">Snacks</a>
-    <a href="products.php?category=Food&search=<?php echo urlencode($search); ?>&sort=<?php echo urlencode($sort); ?>" class="<?php echo ($selected_category == 'Food') ? 'active-filter' : ''; ?>">Food</a>
-</div>
+            <?php if (!empty($category)) { ?>
+                <input type="hidden" name="category" value="<?php echo htmlspecialchars($category); ?>">
+            <?php } ?>
 
-<div class="results-info">
-    <?php
-    if (!empty($search) && $selected_category != "All") {
-        echo "Showing <strong>" . htmlspecialchars($selected_category) . "</strong> results for: <strong>" . htmlspecialchars($search) . "</strong>";
-    } elseif (!empty($search)) {
-        echo "Showing results for: <strong>" . htmlspecialchars($search) . "</strong>";
-    } elseif ($selected_category != "All") {
-        echo "Showing category: <strong>" . htmlspecialchars($selected_category) . "</strong>";
-    } else {
-        echo "Showing all products";
-    }
-    ?>
-</div>
+            <?php if (!empty($sort) && $sort !== "default") { ?>
+                <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sort); ?>">
+            <?php } ?>
 
-<div class="products-container">
+            <button type="submit">Search</button>
+        </form>
+
+        <form method="GET" class="modern-sort-form">
+            <?php if (!empty($search)) { ?>
+                <input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>">
+            <?php } ?>
+
+            <?php if (!empty($category)) { ?>
+                <input type="hidden" name="category" value="<?php echo htmlspecialchars($category); ?>">
+            <?php } ?>
+
+            <label>Sort by</label>
+            <select name="sort" onchange="this.form.submit()">
+                <option value="default" <?php if ($sort === "default") echo "selected"; ?>>Default</option>
+                <option value="price_low" <?php if ($sort === "price_low") echo "selected"; ?>>Price: Low to High</option>
+                <option value="price_high" <?php if ($sort === "price_high") echo "selected"; ?>>Price: High to Low</option>
+                <option value="name_az" <?php if ($sort === "name_az") echo "selected"; ?>>Name: A to Z</option>
+                <option value="name_za" <?php if ($sort === "name_za") echo "selected"; ?>>Name: Z to A</option>
+            </select>
+        </form>
+    </div>
+
+    <div class="modern-category-row">
+        <a href="products.php" class="<?php echo empty($category) ? 'active-category-pill' : ''; ?>">All</a>
+
+        <?php if ($categories_result) { ?>
+            <?php while ($cat = mysqli_fetch_assoc($categories_result)) { ?>
+                <a href="products.php?category=<?php echo urlencode($cat["category"]); ?>"
+                   class="<?php echo ($category === $cat["category"]) ? 'active-category-pill' : ''; ?>">
+                    <?php echo htmlspecialchars($cat["category"]); ?>
+                </a>
+            <?php } ?>
+        <?php } ?>
+    </div>
+
+    <div class="products-result-bar">
+        <p>
+            <?php if (!empty($search)) { ?>
+                Showing results for <strong><?php echo htmlspecialchars($search); ?></strong>
+            <?php } elseif (!empty($category)) { ?>
+                Showing <strong><?php echo htmlspecialchars($category); ?></strong> products
+            <?php } else { ?>
+                Showing all products
+            <?php } ?>
+        </p>
+
+        <span><?php echo $total_products; ?> items found</span>
+    </div>
+
     <?php if (mysqli_num_rows($result) > 0) { ?>
 
-        <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+        <div class="modern-products-grid">
+            <?php while ($product = mysqli_fetch_assoc($result)) { ?>
+                <div class="modern-product-card">
 
-            <div class="product-card">
+                    <div class="modern-product-image">
+                        <?php
+                        $image_file = $product["image"] ?? "";
+                        $image_path = "images/product_images/" . $image_file;
 
-                <?php if (!empty($row["image"])) { ?>
-                    <img 
-                        src="images/<?php echo htmlspecialchars($row["image"]); ?>" 
-                        class="product-image"
-                        alt="<?php echo htmlspecialchars($row["product_name"]); ?>"
-                    >
-                <?php } else { ?>
-                    <img 
-                        src="images/default-product.jpg" 
-                        class="product-image"
-                        alt="Default product image"
-                    >
+                        if (!empty($image_file) && file_exists($image_path)) {
+                            echo '<img src="' . htmlspecialchars($image_path) . '" alt="' . htmlspecialchars($product["product_name"]) . '">';
+                        } else {
+                            echo '<div class="product-image-placeholder">No Image</div>';
+                        }
+                        ?>
+                    </div>
+
+                    <div class="modern-product-info">
+                        <span class="modern-category-pill">
+                            <?php echo htmlspecialchars($product["category"]); ?>
+                        </span>
+
+                        <h3><?php echo htmlspecialchars($product["product_name"]); ?></h3>
+
+                        <p>
+                            <?php
+                            $description = $product["description"] ?? "";
+                            echo htmlspecialchars(strlen($description) > 90 ? substr($description, 0, 90) . "..." : $description);
+                            ?>
+                        </p>
+
+                        <div class="modern-product-meta">
+                            <strong>$<?php echo number_format($product["price"], 2); ?></strong>
+                            <span>In Stock: <?php echo htmlspecialchars($product["stock_quantity"]); ?></span>
+                        </div>
+
+                        <form method="POST" action="add_to_cart.php?id=<?php echo $product["product_id"]; ?>" class="product-add-cart-form">
+                            <div class="product-qty-control">
+                                <button type="button" onclick="changeProductQty(this, -1)">−</button>
+                                <input type="number" name="quantity" value="1" min="1">
+                                <button type="button" onclick="changeProductQty(this, 1)">+</button>
+                            </div>
+
+                            <button type="submit" class="modern-add-cart-btn">Add to Cart</button>
+                        </form>
+                    </div>
+                </div>
+            <?php } ?>
+        </div>
+
+        <?php if ($total_pages > 1) { ?>
+            <div class="modern-pagination">
+                <?php
+                $query_params = [];
+
+                if (!empty($search)) {
+                    $query_params["search"] = $search;
+                }
+
+                if (!empty($category)) {
+                    $query_params["category"] = $category;
+                }
+
+                if (!empty($sort)) {
+                    $query_params["sort"] = $sort;
+                }
+                ?>
+
+                <?php if ($page > 1) { 
+                    $query_params["page"] = $page - 1;
+                ?>
+                    <a href="products.php?<?php echo http_build_query($query_params); ?>">Previous</a>
                 <?php } ?>
 
-                <div class="product-category">
-                    <?php echo htmlspecialchars($row["category"]); ?>
-                </div>
+                <?php for ($i = 1; $i <= $total_pages; $i++) { 
+                    $query_params["page"] = $i;
+                ?>
+                    <a href="products.php?<?php echo http_build_query($query_params); ?>"
+                       class="<?php echo $i === $page ? 'active-page' : ''; ?>">
+                        <?php echo $i; ?>
+                    </a>
+                <?php } ?>
 
-                <h3>
-                    <?php echo htmlspecialchars($row["product_name"]); ?>
-                </h3>
-
-                <p class="product-description">
-                    <?php echo htmlspecialchars($row["description"]); ?>
-                </p>
-
-                <p class="product-price">
-                    $<?php echo number_format($row["price"], 2); ?>
-                </p>
-
-                <p class="product-stock">
-                    In Stock: <?php echo (int)$row["stock_quantity"]; ?>
-                </p>
-
+                <?php if ($page < $total_pages) { 
+                    $query_params["page"] = $page + 1;
+                ?>
+                    <a href="products.php?<?php echo http_build_query($query_params); ?>">Next</a>
+                <?php } ?>
             </div>
-
         <?php } ?>
 
     <?php } else { ?>
 
-        <p class="no-products">No products found.</p>
+        <div class="empty-state-card">
+            <h2>No products found.</h2>
+            <p>Try a different search or category.</p>
+            <a href="products.php" class="admin-primary-btn">View All Products</a>
+        </div>
 
     <?php } ?>
-</div>
 
-<?php if ($total_pages > 1) { ?>
-    <div class="pagination">
+</section>
 
-        <?php if ($page > 1) { ?>
-            <a href="products.php?category=<?php echo urlencode($selected_category); ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo urlencode($sort); ?>&page=<?php echo $page - 1; ?>">Previous</a>
-        <?php } ?>
+<script>
+function changeProductQty(button, amount) {
+    const input = button.parentElement.querySelector("input[type='number']");
+    let currentValue = parseInt(input.value);
 
-        <?php for ($i = 1; $i <= $total_pages; $i++) { ?>
-            <a href="products.php?category=<?php echo urlencode($selected_category); ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo urlencode($sort); ?>&page=<?php echo $i; ?>"
-               class="<?php echo ($i == $page) ? 'active-page' : ''; ?>">
-               <?php echo $i; ?>
-            </a>
-        <?php } ?>
+    if (isNaN(currentValue)) {
+        currentValue = 1;
+    }
 
-        <?php if ($page < $total_pages) { ?>
-            <a href="products.php?category=<?php echo urlencode($selected_category); ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo urlencode($sort); ?>&page=<?php echo $page + 1; ?>">Next</a>
-        <?php } ?>
+    currentValue += amount;
 
-    </div>
-<?php } ?>
+    if (currentValue < 1) {
+        currentValue = 1;
+    }
+
+    input.value = currentValue;
+}
+</script>
 
 <?php include("includes/footer.php"); ?>
