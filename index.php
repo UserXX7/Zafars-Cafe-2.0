@@ -91,7 +91,7 @@ if (!$sale_result) {
 
         <div class="premium-hero-visual">
             <div class="premium-image-card">
-                <img src="images/storefront.jpg" alt="Zafar's Cafe & Convenience storefront">
+                <img src="images/brand_images/hero-cafe.jpg" alt="Zafar's Cafe & Convenience storefront">
             </div>
 
             <div class="floating-info-card card-top">
