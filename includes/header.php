@@ -22,21 +22,26 @@ $base_url = "/MAC272/zafars_cafe/";
     <nav>
         <a href="<?php echo $base_url; ?>index.php">Home</a>
         <a href="<?php echo $base_url; ?>products.php">Products</a>
+        <a href="<?php echo $base_url; ?>feedback.php">Feedback</a>
 
         <?php if (isset($_SESSION["user_id"])): ?>
 
             <?php if (isset($_SESSION["role"]) && $_SESSION["role"] === "admin") { ?>
 
-                <a href="admin/admin_dashboard.php">Dashboard</a>
-                <span class="welcome">Hi, <?php echo htmlspecialchars($_SESSION["full_name"]); ?></span>
-                <a href="logout.php" class="logout-btn">Logout</a>
+                <a href="<?php echo $base_url; ?>admin/admin_dashboard.php">Dashboard</a>
+
+                <span class="welcome">
+                    Hi, <?php echo htmlspecialchars($_SESSION["full_name"] ?? "Admin"); ?>
+                </span>
+
+                <a href="<?php echo $base_url; ?>logout.php" class="logout-btn">Logout</a>
 
             <?php } else { ?>
 
-                <a href="profile.php">Profile</a>
+                <a href="<?php echo $base_url; ?>profile.php">Profile</a>
 
                 <span class="welcome">
-                    Hi, <?php echo htmlspecialchars($_SESSION["full_name"]); ?>
+                    Hi, <?php echo htmlspecialchars($_SESSION["full_name"] ?? "User"); ?>
                 </span>
 
                 <?php
@@ -49,18 +54,20 @@ $base_url = "/MAC272/zafars_cafe/";
                 }
                 ?>
 
-                <a href="cart.php" class="nav-cart-btn">
+                <a href="<?php echo $base_url; ?>cart.php" class="nav-cart-btn">
                     <span class="cart-label">Cart</span>
                     <span class="cart-count"><?php echo $cart_count; ?></span>
                 </a>
 
-                <a href="logout.php" class="logout-btn">Logout</a>
+                <a href="<?php echo $base_url; ?>logout.php" class="logout-btn">Logout</a>
 
             <?php } ?>
 
         <?php else: ?>
-            <a href="login.php" class="login-btn">Login</a>
-            <a href="register.php" class="register-btn">Register</a>
+
+            <a href="<?php echo $base_url; ?>login.php" class="login-btn">Login</a>
+            <a href="<?php echo $base_url; ?>register.php" class="register-btn">Register</a>
+
         <?php endif; ?>
     </nav>
 </header>
