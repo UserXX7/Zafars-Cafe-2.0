@@ -32,7 +32,12 @@ if (!empty($category) && $category !== "All") {
     $where .= " AND category = '$safe_category'";
 }
 
-$order_by = "ORDER BY product_id DESC";
+$order_by = "ORDER BY 
+    CASE 
+        WHEN display_order = 0 THEN 9999 
+        ELSE display_order 
+    END ASC,
+    product_name ASC";
 
 if ($sort === "price_low") {
     $order_by = "ORDER BY price ASC";
