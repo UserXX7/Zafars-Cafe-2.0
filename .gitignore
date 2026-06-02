@@ -25,6 +25,7 @@ build/
 
 # Database exports
 *.sql
+!snack_image_updates.sql
 
 # Uploads
 uploads/
