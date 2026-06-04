@@ -69,6 +69,28 @@ if (!$result) {
 
 $categories_query = "SELECT DISTINCT category FROM products WHERE status = 'active' ORDER BY category ASC";
 $categories_result = mysqli_query($conn, $categories_query);
+
+/*helper function to calculate final price based on sale status and discount*/
+
+function calculateFinalPrice($price, $is_on_sale, $discount_type, $discount_value) {
+    $price = floatval($price);
+    $discount_value = floatval($discount_value);
+    $discount_type = strtolower(trim($discount_type ?? ""));
+
+    if (intval($is_on_sale) !== 1 || $discount_value <= 0) {
+        return round($price, 2);
+    }
+
+    if ($discount_type === "percentage") {
+        return round(max(0, $price - ($price * ($discount_value / 100))), 2);
+    }
+
+    if ($discount_type === "fixed") {
+        return round(max(0, $price - $discount_value), 2);
+    }
+
+    return round($price, 2);
+}
 ?>
 
 <section class="modern-products-page">
@@ -153,6 +175,18 @@ $categories_result = mysqli_query($conn, $categories_query);
 
         <div class="modern-products-grid">
             <?php while ($product = mysqli_fetch_assoc($result)) { ?>
+            <?php
+                $original_price = floatval($product["price"]);
+
+                $final_price = round(calculateFinalPrice(
+                    $product["price"],
+                    $product["is_on_sale"],
+                    $product["discount_type"],
+                    $product["discount_value"]
+                ), 2);
+
+                $is_sale = intval($product["is_on_sale"]) === 1 && floatval($product["discount_value"]) > 0;
+                ?>
                 <div class="modern-product-card">
 
                     <div class="modern-product-image">
@@ -169,6 +203,17 @@ $categories_result = mysqli_query($conn, $categories_query);
                     </div>
 
                     <div class="modern-product-info">
+                    <?php if ($is_sale) { ?>
+                        <span class="product-sale-badge">
+                            <?php
+                                if (strtolower(trim($product["discount_type"])) === "percentage") {
+                                    echo intval($product["discount_value"]) . "% OFF";
+                                } else {
+                                    echo "$" . number_format($product["discount_value"], 2) . " OFF";
+                                }
+                            ?>
+                        </span>
+                    <?php } ?>
                         <span class="modern-category-pill">
                             <?php echo htmlspecialchars($product["category"]); ?>
                         </span>
@@ -183,7 +228,15 @@ $categories_result = mysqli_query($conn, $categories_query);
                         </p>
 
                         <div class="modern-product-meta">
-                            <strong>$<?php echo number_format($product["price"], 2); ?></strong>
+                            <div class="product-price-box">
+                                <?php if ($is_sale) { ?>
+                                    <span class="original-price">$<?php echo number_format($original_price, 2); ?></span>
+                                    <strong class="sale-price">$<?php echo number_format($final_price, 2); ?></strong>
+                                <?php } else { ?>
+                                    <strong>$<?php echo number_format($original_price, 2); ?></strong>
+                                <?php } ?>
+                            </div>
+
                             <span>In Stock: <?php echo htmlspecialchars($product["stock_quantity"]); ?></span>
                         </div>
 
