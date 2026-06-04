@@ -42,7 +42,9 @@ $total = 0;
                     </tr>
 
                     <?php foreach ($cart as $product_id => $item) { 
-                        $subtotal = $item["price"] * $item["quantity"];
+                        $item_price = round(floatval($item["price"]), 2);
+                        $item_quantity = intval($item["quantity"]);
+                        $subtotal = round($item_price * $item_quantity, 2);
                         $total += $subtotal;
                     ?>
                         <tr>
@@ -64,9 +66,23 @@ $total = 0;
                                     </div>
                                 </div>
                             </td>
+                                <td>
+                                    <?php
+                                    $item_price = round(floatval($item["price"]), 2);
+                                    $original_price = isset($item["original_price"]) ? round(floatval($item["original_price"]), 2) : $item_price;
+                                    $is_sale_item = isset($item["is_on_sale"]) && intval($item["is_on_sale"]) === 1 && $original_price > $item_price;
+                                    ?>
 
-                            <td>$<?php echo number_format($item["price"], 2); ?></td>
-
+                                    <?php if ($is_sale_item): ?>
+                                        <div class="cart-sale-price-box">
+                                            <span class="cart-original-price">$<?php echo number_format($original_price, 2); ?></span>
+                                            <span class="cart-sale-price">$<?php echo number_format($item_price, 2); ?></span>
+                                            <span class="cart-sale-label">Sale Price</span>
+                                        </div>
+                                    <?php else: ?>
+                                        $<?php echo number_format($item_price, 2); ?>
+                                    <?php endif; ?>
+                                </td>
                             <td>
                                 <form method="POST" action="update_cart.php" class="cart-qty-form">
                                     <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">

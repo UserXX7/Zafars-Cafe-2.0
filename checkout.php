@@ -39,8 +39,14 @@ if (!$user) {
 }
 
 foreach ($cart as $item) {
-    $subtotal_total += $item["price"] * $item["quantity"];
+    $item_price = round(floatval($item["price"]), 2);
+    $item_quantity = intval($item["quantity"]);
+    $item_subtotal = round($item_price * $item_quantity, 2);
+
+    $subtotal_total += $item_subtotal;
 }
+
+$subtotal_total = round($subtotal_total, 2);
 
 $order_type = "Pickup";
 $delivery_address = "";
@@ -138,9 +144,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             foreach ($cart as $product_id => $item) {
                 $product_id = intval($product_id);
                 $product_name = mysqli_real_escape_string($conn, $item["product_name"]);
-                $price = floatval($item["price"]);
+                $price = round(floatval($item["price"]), 2);
                 $quantity = intval($item["quantity"]);
-                $subtotal = $price * $quantity;
+                $subtotal = round($price * $quantity, 2);
 
                 $item_query = "INSERT INTO order_items 
                                (order_id, product_id, product_name, price, quantity, subtotal)
@@ -185,15 +191,27 @@ include("includes/header.php");
 
             <div class="checkout-items-list">
                 <?php foreach ($cart as $item) { 
-                    $item_subtotal = $item["price"] * $item["quantity"];
-                ?>
+                        $item_price = round(floatval($item["price"]), 2);
+                        $original_price = isset($item["original_price"]) ? round(floatval($item["original_price"]), 2) : $item_price;
+                        $item_quantity = intval($item["quantity"]);
+                        $item_subtotal = round($item_price * $item_quantity, 2);
+                        $is_sale_item = isset($item["is_on_sale"]) && intval($item["is_on_sale"]) === 1 && $original_price > $item_price;
+                    ?>
                     <div class="checkout-item">
                         <div>
                             <strong><?php echo htmlspecialchars($item["product_name"]); ?></strong>
                             <span>Qty: <?php echo $item["quantity"]; ?></span>
                         </div>
 
-                        <p>$<?php echo number_format($item_subtotal, 2); ?></p>
+                        <div class="checkout-item-price-box">
+                            <?php if ($is_sale_item): ?>
+                                <span class="checkout-original-price">$<?php echo number_format($original_price, 2); ?></span>
+                                <strong class="checkout-sale-price">$<?php echo number_format($item_price, 2); ?></strong>
+                                <small>Subtotal: $<?php echo number_format($item_subtotal, 2); ?></small>
+                            <?php else: ?>
+                                <strong>$<?php echo number_format($item_subtotal, 2); ?></strong>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 <?php } ?>
             </div>
